@@ -8,10 +8,8 @@ from src.datasets import get_loaders
 from src.models import (
     get_resnet18,
     CNN_Simple,
-)  # se build_model è in un altro modulo, importalo lì
-from src.utils import EarlyStopping, save_checkpoint  # e tutto ciò che usi
-
-# se hai già una build_model altrove, importala e rimuovi questa definizione.
+)
+from src.utils import EarlyStopping, save_checkpoint
 
 
 def build_model(name: str, num_classes: int, finetune: bool):
@@ -87,65 +85,3 @@ def main():
 
     if writer:
         writer.close()
-
-
-# Placeholder: assicurati che queste funzioni siano importate o definite
-def train_one_epoch(model, loader, criterion, optimizer, device):
-    model.train()
-    import torch
-    import numpy as np
-
-    running_loss, correct, total = 0.0, 0, 0
-    y_true, y_pred = [], []
-    for x, y in loader:
-        x, y = x.to(device), y.to(device)
-        optimizer.zero_grad()
-        logits = model(x)
-        loss = criterion(logits, y)
-        loss.backward()
-        optimizer.step()
-
-        running_loss += loss.item() * x.size(0)
-        preds = logits.argmax(1)
-        correct += (preds == y).sum().item()
-        total += y.size(0)
-        y_true.extend(y.tolist())
-        y_pred.extend(preds.tolist())
-
-    epoch_loss = running_loss / max(1, total)
-    acc = correct / max(1, total)
-    # F1 macro “rapido” per evitare dipendenze qui; usa sklearn se preferisci
-    from sklearn.metrics import f1_score
-
-    f1 = f1_score(y_true, y_pred, average="macro", zero_division=0)
-    return epoch_loss, acc, f1
-
-
-def evaluate(model, loader, criterion, device):
-    model.eval()
-    import torch
-
-    running_loss, correct, total = 0.0, 0, 0
-    y_true, y_pred = [], []
-    with torch.no_grad():
-        for x, y in loader:
-            x, y = x.to(device), y.to(device)
-            logits = model(x)
-            loss = criterion(logits, y)
-            running_loss += loss.item() * x.size(0)
-            preds = logits.argmax(1)
-            correct += (preds == y).sum().item()
-            total += y.size(0)
-            y_true.extend(y.tolist())
-            y_pred.extend(preds.tolist())
-
-    epoch_loss = running_loss / max(1, total)
-    acc = correct / max(1, total)
-    from sklearn.metrics import f1_score
-
-    f1 = f1_score(y_true, y_pred, average="macro", zero_division=0)
-    return epoch_loss, acc, f1
-
-
-if __name__ == "__main__":
-    main()
