@@ -1,7 +1,5 @@
 # MachineLearning
 
-# README
-
 ## Start-up
 
 Per iniziare crea un nuovo *environment* (anche venv) ed installa i pacchetti dal file **requirements.txt**:
