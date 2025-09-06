@@ -31,3 +31,15 @@ class CNN_Simple(nn.Module):
         x = self.features(x)
         x = self.classifier(x)
         return x
+
+
+def get_resnet18(num_classes: int, finetune: bool = False):
+    model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+
+    if not finetune:
+        for p in model.parameters():
+            p.requires_grad = False
+
+    in_features = model.fc.in_features
+    model.fc = nn.Linear(in_features, num_classes)
+    return model
