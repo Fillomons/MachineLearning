@@ -20,3 +20,23 @@ def get_transforms(train: bool = True):
         ]
         return transforms.Compose(aug + base)
     return transforms.Compose(base)
+
+
+def get_loaders(processed_root: str, batch_size: int, num_workers: int = 2):
+    root = Path(processed_root)
+
+    train_ds = datasets.ImageFolder(root / "train", transform=get_transforms(True))
+    val_ds = datasets.ImageFolder(root / "val", transform=get_transforms(False))
+    test_ds = datasets.ImageFolder(root / "test", transform=get_transforms(False))
+
+    train_loader = DataLoader(
+        train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers
+    )
+    val_loader = DataLoader(
+        val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers
+    )
+    test_loader = DataLoader(
+        test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers
+    )
+
+    return train_loader, val_loader, test_loader, train_ds.classes
