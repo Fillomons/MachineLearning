@@ -38,3 +38,41 @@ class EarlyStopping:
             self.should_stop = True
 
         return improve
+
+
+def save_checkpoint(state, path):
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    torch.save(state, path)
+
+
+def plot_confusion_matrix(y_true, y_pred, class_names, out_path):
+    cm = confusion_matrix(y_true, y_pred)
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    im = ax.imshow(cm, interpolation="nearest")
+    ax.figure.colorbar(im, ax=ax)
+    ax.set(
+        xticks=np.arange(cm.shape[1]),
+        yticks=np.arange(cm.shape[0]),
+        xticklabels=class_names,
+        yticklabels=class_names,
+        ylabel="True",
+        xlabel="Predicted",
+        title="Confusion Matrix",
+    )
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
+    thresh = cm.max() / 2.0
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(
+                j,
+                i,
+                format(cm[i, j], "d"),
+                ha="center",
+                va="center",
+                color="white" if cm[i, j] > thresh else "black",
+            )
+    fig.tight_layout()
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(out_path, bbox_inches="tight")
+    plt.close(fig)
