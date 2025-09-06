@@ -1,0 +1,45 @@
+# --- Python cache ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+*.env
+
+# --- VSCode & IDEs ---
+.vscode/
+.idea/
+*.code-workspace
+
+# --- Jupyter & IPython ---
+.ipynb_checkpoints/
+*.ipynb
+
+# --- OS generated ---
+.DS_Store
+Thumbs.db
+
+# --- Logs & checkpoints ---
+logs/
+*.log
+*.out
+
+# --- PyTorch models ---
+models/*.pt
+models/*.pth
+
+# --- TensorBoard ---
+runs/
+
+# --- Plots & figures (keep if you want only in repo selectively) ---
+plots/*.png
+plots/*.csv
+
+# --- Data ---
+data/raw/
+data/processed/
