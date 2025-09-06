@@ -36,9 +36,13 @@ models/*.pth
 # --- TensorBoard ---
 runs/
 
-# --- Plots & figures (keep if you want only in repo selectively) ---
-plots/*.png
-plots/*.csv
+# keep everything in plots ignored by default
+plots/*
+
+# but DO commit these:
+!plots/cm_cnn_simple.png
+!plots/cm_resnet18.png
+!plots/split_bars.png
 
 # --- Data ---
 data/raw/
