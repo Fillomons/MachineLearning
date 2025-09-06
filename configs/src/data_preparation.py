@@ -66,3 +66,21 @@ def main():
                 "total": n_train + n_val + n_test,
             }
         )
+
+    df = pd.DataFrame(report_rows)
+    df.to_csv("plots/split_report.csv", index=False)
+
+    # Bar plot
+    ax = df.set_index("class")[["train", "val", "test"]].plot(
+        kind="bar", figsize=(7, 4)
+    )
+    ax.set_title("Images per split and class")
+    ax.set_ylabel("# images")
+    fig = ax.get_figure()
+    fig.tight_layout()
+    fig.savefig("plots/split_bars.png", dpi=150)
+    print(df)
+
+
+if __name__ == "__main__":
+    main()
