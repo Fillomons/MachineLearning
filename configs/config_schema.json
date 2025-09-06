@@ -1,0 +1,81 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": [
+      "seed",
+      "device",
+      "classes",
+      "paths",
+      "split",
+      "budget_per_class",
+      "training",
+      "model",
+      "tensorboard"
+    ],
+    "properties": {
+      "seed": { "type": "integer" },
+      "device": { "type": "string" },
+      "classes": {
+        "type": "array",
+        "items": { "type": "string" },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "paths": {
+        "type": "object",
+        "required": ["raw_root", "processed_root", "models_root", "plots_root", "tb_root"],
+        "properties": {
+          "raw_root": { "type": "string" },
+          "processed_root": { "type": "string" },
+          "models_root": { "type": "string" },
+          "plots_root": { "type": "string" },
+          "tb_root": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "split": {
+        "type": "object",
+        "required": ["train", "val", "test"],
+        "properties": {
+          "train": { "type": "number" },
+          "val": { "type": "number" },
+          "test": { "type": "number" }
+        },
+        "additionalProperties": false
+      },
+      "budget_per_class": {
+        "type": "object",
+        "required": ["train", "val", "test"],
+        "properties": {
+          "train": { "type": "integer" },
+          "val": { "type": "integer" },
+          "test": { "type": "integer" }
+        },
+        "additionalProperties": false
+      },
+      "training": {
+        "type": "object",
+        "required": ["epochs", "batch_size", "lr", "weight_decay", "patience"],
+        "properties": {
+          "epochs": { "type": "integer" },
+          "batch_size": { "type": "integer" },
+          "lr": { "type": "number" },
+          "weight_decay": { "type": "number" },
+          "patience": { "type": "integer" }
+        },
+        "additionalProperties": false
+      },
+      "model": {
+        "type": "object",
+        "required": ["name", "finetune"],
+        "properties": {
+          "name": { "type": "string", "enum": ["cnn_simple", "resnet18"] },
+          "finetune": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "tensorboard": { "type": "boolean" }
+    },
+    "additionalProperties": false
+  }
+  
