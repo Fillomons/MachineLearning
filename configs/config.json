@@ -1,0 +1,23 @@
+{
+    "seed": 42,
+    "device": "cpu",
+    "classes": ["Tomato_healthy", "Tomato_Late_blight"],
+    "paths": {
+    "raw_root": "data/raw/PlantVillage",
+    "processed_root": "data/processed",
+    "models_root": "models",
+    "plots_root": "plots",
+    "tb_root": "runs"
+    },
+    "split": {"train": 0.7, "val": 0.15, "test": 0.15},
+    "budget_per_class": {"train": 600, "val": 120, "test": 120},
+    "training": {
+    "epochs": 15,
+    "batch_size": 32,
+    "lr": 0.0005,
+    "weight_decay": 0.0001,
+    "patience": 4
+    },
+    "model": {"name": "cnn_simple", "finetune": false},
+    "tensorboard": true
+    }
