@@ -32,6 +32,23 @@ def main():
         cfg["model"]["name"], len(class_names), cfg["model"]["finetune"]
     ).to(device)
 
+    # Resume from checkpoint
+    resume_cfg = cfg["training"].get("resume", False)
+    default_resume = (
+        Path(cfg["paths"]["models_root"]) / f"{cfg['model']['name']}_last.pt"
+    )
+    resume_path = Path(cfg["training"].get("resume_path", default_resume))
+
+    if resume_cfg and resume_path.exists():
+        state = torch.load(resume_path, map_location=device)
+        if "model_state" in state:
+            model.load_state_dict(state["model_state"])
+            print(f"[INFO] Resumed weights from: {resume_path}")
+        else:
+            print(f"[WARN] Checkpoint found but missing 'model_state': {resume_path}")
+    elif resume_cfg:
+        print(f"[WARN] Resume enabled but checkpoint not found: {resume_path}")
+
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
