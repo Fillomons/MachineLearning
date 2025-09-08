@@ -61,9 +61,15 @@
           "batch_size": { "type": "integer" },
           "lr": { "type": "number" },
           "weight_decay": { "type": "number" },
-          "patience": { "type": "integer" }
-        },
-        "additionalProperties": false
+          "patience": { "type": "integer" },
+
+          "target_metric": { "type": "string", "enum": ["val_f1", "val_accuracy", "val_precision", "val_recall"] },
+          "target_value":  { "type": "number" },
+
+          "resume":        { "type": "boolean" },
+          "resume_path":   { "type": "string" }
+        }     ,
+        "additionalProperties": true
       },
       "model": {
         "type": "object",
