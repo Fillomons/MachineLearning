@@ -10,6 +10,7 @@ from src.models import (
     CNN_Simple,
 )
 from src.utils import EarlyStopping, save_checkpoint
+from sklearn.metrics import f1_score, precision_recall_fscore_support, accuracy_score
 
 
 def build_model(name: str, num_classes: int, finetune: bool):
@@ -66,6 +67,16 @@ def main():
         )
         va_loss, va_acc, va_f1 = evaluate(model, val_loader, criterion, device)
 
+        ys_val, yhs_val = _collect_preds(model, val_loader, device)
+
+        prec_all, rec_all, f1_all, sup_all = precision_recall_fscore_support(
+            ys_val, yhs_val, average=None, zero_division=0
+        )
+        val_prec = float(prec_all.mean())
+        val_rec = float(rec_all.mean())
+        val_f1_macro = float(f1_all.mean())
+        val_support = int(sup_all.sum())
+
         target_metric = cfg["training"].get("target_metric", None)
         target_value = cfg["training"].get("target_value", None)
 
@@ -95,6 +106,10 @@ def main():
             writer.add_scalar("Acc/val", va_acc, epoch)
             writer.add_scalar("F1/train", tr_f1, epoch)
             writer.add_scalar("F1/val", va_f1, epoch)
+            writer.add_scalar("Val/precision_macro", val_prec, epoch)
+            writer.add_scalar("Val/recall_macro", val_rec, epoch)
+            writer.add_scalar("Val/f1_macro_tb", val_f1_macro, epoch)
+            writer.add_scalar("Val/support", val_support, epoch)
 
         print(
             f"Epoch {epoch}: "
@@ -121,9 +136,51 @@ def main():
         if es.should_stop:
             print("Early stopping triggered.")
             break
+    if writer:
+
+        best_path = (
+            Path(cfg["paths"]["models_root"]) / f"{cfg['model']['name']}_best.pt"
+        )
+        if best_path.exists():
+            state = torch.load(best_path, map_location=device)
+            model.load_state_dict(state["model_state"])
+
+            ys_val, yhs_val = _collect_preds(model, val_loader, device)
+            prec_b, rec_b, f1_b, _ = precision_recall_fscore_support(
+                ys_val, yhs_val, average="macro", zero_division=0
+            )
+            acc_b = accuracy_score(ys_val, yhs_val)
+
+            hparams = {
+                "model": cfg["model"]["name"],
+                "batch_size": cfg["training"]["batch_size"],
+                "lr": cfg["training"]["lr"],
+                "weight_decay": cfg["training"]["weight_decay"],
+                "finetune": cfg["model"]["finetune"],
+            }
+            metrics = {
+                "h/val_accuracy_best": acc_b,
+                "h/val_precision_best": prec_b,
+                "h/val_recall_best": rec_b,
+                "h/val_f1_best": f1_b,
+            }
+            writer.add_hparams(hparams, metrics)
 
     if writer:
         writer.close()
+
+
+def _collect_preds(model, loader, device):
+    model.eval()
+    ys, yhs = [], []
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(device)
+            logits = model(x)
+            yhat = logits.argmax(1).cpu()
+            ys.extend(y.tolist())
+            yhs.extend(yhat.tolist())
+    return ys, yhs
 
 
 def train_one_epoch(model, loader, criterion, optimizer, device):
@@ -150,7 +207,6 @@ def train_one_epoch(model, loader, criterion, optimizer, device):
 
     epoch_loss = running_loss / max(1, total)
     acc = correct / max(1, total)
-    from sklearn.metrics import f1_score
 
     f1 = f1_score(y_true, y_pred, average="macro", zero_division=0)
     return epoch_loss, acc, f1
@@ -176,7 +232,6 @@ def evaluate(model, loader, criterion, device):
 
     epoch_loss = running_loss / max(1, total)
     acc = correct / max(1, total)
-    from sklearn.metrics import f1_score
 
     f1 = f1_score(y_true, y_pred, average="macro", zero_division=0)
     return epoch_loss, acc, f1
