@@ -66,6 +66,28 @@ def main():
         )
         va_loss, va_acc, va_f1 = evaluate(model, val_loader, criterion, device)
 
+        target_metric = cfg["training"].get("target_metric", None)
+        target_value = cfg["training"].get("target_value", None)
+
+        if target_metric is not None and target_value is not None:
+            _val = {
+                "val_f1": va_f1,
+                "val_accuracy": va_acc,
+            }.get(target_metric, None)
+
+            if _val is not None and float(_val) >= float(target_value):
+                print(
+                    f"[INFO] Target reached: {target_metric}={_val:.4f} >= {float(target_value):.4f}. Stopping."
+                )
+                save_checkpoint(
+                    {"epoch": epoch, "model_state": model.state_dict()},
+                    Path(cfg["paths"]["models_root"])
+                    / f"{cfg['model']['name']}_best.pt",
+                )
+                if writer:
+                    writer.flush()
+                break
+
         if writer:
             writer.add_scalar("Loss/train", tr_loss, epoch)
             writer.add_scalar("Loss/val", va_loss, epoch)
