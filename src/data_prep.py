@@ -3,7 +3,7 @@ import pandas as pd
 import shutil
 import matplotlib.pyplot as plt
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split  # <-- necessario
 
 from src.utils import seed_all
 from src.config import load_config
@@ -30,16 +30,13 @@ def main():
     proc_root.mkdir(parents=True, exist_ok=True)
     Path("plots").mkdir(parents=True, exist_ok=True)
 
-    # Collect files per class
     files_per_class = {}
     for c in classes:
         cls_dir = raw_root / c
         assert cls_dir.exists(), f"Class folder missing: {cls_dir}"
         files = sorted([p for p in cls_dir.iterdir() if p.is_file()])
-
         files_per_class[c] = files
 
-    # Build splits with per-class budgets using sklearn (reproducible)
     report_rows = []
     for c, files in files_per_class.items():
         n_total = len(files)
@@ -48,24 +45,37 @@ def main():
             budget["train"] if budget["train"] > 0 else int(n_total * split["train"])
         )
         n_val = budget["val"] if budget["val"] > 0 else int(n_total * split["val"])
-
         n_test = budget["test"] if budget["test"] > 0 else (n_total - n_train - n_val)
 
-        n_train = min(n_train, n_total)
-        n_val = min(n_val, max(0, n_total - n_train))
-        n_test = min(n_test, max(0, n_total - n_train - n_val))
+        n_train = max(0, min(n_train, n_total))
+        remaining = n_total - n_train
+        n_val = max(0, min(n_val, remaining))
+        remaining -= n_val
+        n_test = max(0, min(n_test, remaining))
 
         train_files, temp_files = train_test_split(
             files, train_size=n_train, shuffle=True, random_state=cfg["seed"]
         )
 
-        if len(temp_files) > 0 and n_val > 0:
-            n_val_eff = min(n_val, len(temp_files))
-            val_files, test_files = train_test_split(
-                temp_files, train_size=n_val_eff, shuffle=True, random_state=cfg["seed"]
-            )
+        if len(temp_files) > 0:
+            if n_val > 0:
+                val_files, rest_files = train_test_split(
+                    temp_files, train_size=n_val, shuffle=True, random_state=cfg["seed"]
+                )
+            else:
+                val_files, rest_files = [], temp_files
+
+            if n_test > 0:
+                test_files, _ = train_test_split(
+                    rest_files,
+                    train_size=n_test,
+                    shuffle=True,
+                    random_state=cfg["seed"],
+                )
+            else:
+                test_files = []
         else:
-            val_files, test_files = [], temp_files
+            val_files, test_files = [], []
 
         copy_subset(train_files, proc_root / "train" / c, len(train_files))
         copy_subset(val_files, proc_root / "val" / c, len(val_files))
