@@ -64,7 +64,7 @@ Non è stata eseguita una ricerca sistematica del *learning rate* per ragioni di
 * Loss: **CrossEntropyLoss** (2 classi).
 * Early stopping su **val loss**, salvataggio **best/last**.
 * Metriche: **Accuracy**, **Precision**, **Recall**, **F1 macro**.
-* Log: **TensorBoard** (`runs/`).
+* Log: **TensorBoard** (`runs/`)con curve Loss/Acc/F1/Precision/Recall/Support di validazione. Nel tab **HParams** vengono mostrati i risultati riepilogativi del best model (Accuracy/Precision/Recall/F1 su validation).
 
 ## Results & Analysis
 
@@ -77,3 +77,4 @@ Non è stata eseguita una ricerca sistematica del *learning rate* per ragioni di
 * Sono stati confrontati un **modello manuale** e un **modello con transfer learning**.
 * I risultati sono riproducibili (seed, config, salvataggi).
 * Possibili estensioni: fine-tuning parziale di ResNet18, aumento graduale del budget per classe, test con ResNet50.
+* Il logging avanzato in TensorBoard (Scalars + HParams) permette di confrontare facilmente CNN e ResNet18 e di verificare le metriche chiave di validazione a ogni run.

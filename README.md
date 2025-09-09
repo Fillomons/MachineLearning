@@ -54,12 +54,14 @@ Infine entra nel progetto ed avvia il training/evaluation:
   python -m src.eval
   ```
 
-Per visualizzare i grafici di addestramento (Loss/Acc/F1):
+Per visualizzare i grafici di addestramento (Loss/Acc/F1 + Precision/Recall/Support di validazione):
 
 ```bash
 tensorboard --logdir runs
 # si apre http://localhost:6006
 ```
+Nel tab **Scalars** troverai le curve di Loss/Acc/F1 e le metriche aggiuntive di validazione (precision, recall, support).
+Nel tab **HParams** troverai invece il riepilogo del modello migliore (Accuracy/Precision/Recall/F1 su validation).
 
 ---
 
@@ -130,7 +132,7 @@ Non è stata eseguita una ricerca sistematica del *learning rate* per ragioni di
 
   * `plots/cm_cnn_simple.png`
   * `plots/cm_resnet18.png`
-* **Grafici di training:** da TensorBoard (Loss/Acc/F1 per entrambi i modelli)
+* **Grafici di training:** da TensorBoard (Loss/Acc/F1/Precision/Recall/Support per entrambi i modelli, + tab HParams)
 * **Distribuzione dataset:** `plots/split_bars.png`
 
 ---
@@ -162,6 +164,7 @@ tensorboard --logdir runs
 * Seed fisso per riproducibilità.
 * Early stopping per prevenire overfitting.
 * Salvataggio **best/last** in `models/`.
+* Opzionale: `training.resume`/`resume_path` per riprendere da checkpoint; `training.target_metric`/`target_value` per fermare l’addestramento al raggiungimento della soglia.
 * Tutto eseguibile **su CPU** con i budget correnti (600/120/120 per classe).
 
 
